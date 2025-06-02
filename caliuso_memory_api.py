@@ -33,3 +33,9 @@ async def fetch_memory(session_id: str = ""):
 async def clear_memory(session_id: str = ""):
     open(MEMORY_FILE, 'w').close()
     return {"status": "cleared"}
+
+from fastapi.responses import FileResponse
+
+@app.get("/openapi.yaml", include_in_schema=False)
+def get_openapi():
+    return FileResponse("openapi.yaml", media_type="text/yaml")
