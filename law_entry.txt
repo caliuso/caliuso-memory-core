@@ -1,0 +1,1 @@
+ERROR: Reserved keyword used | SOLUTION: Use safe name like entryTrigger | LAW CODE: 001 

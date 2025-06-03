@@ -1,18 +1,18 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import List
-import json
-import os
+import os, json
 from datetime import datetime
+import requests
 
 app = FastAPI()
+
+RENDER_HOOK = "https://api.render.com/deploy/srv-d0v36afdiees73cf3gqg?key=ndrwqm0sqVI"
+memory_dir = "memory_grid"
+os.makedirs(memory_dir, exist_ok=True)
 
 class MemoryEntry(BaseModel):
     session_id: str
     data: str
-
-memory_dir = "memory_grid"
-os.makedirs(memory_dir, exist_ok=True)
 
 @app.post("/storeMemory")
 def store_memory(entry: MemoryEntry):
@@ -21,14 +21,24 @@ def store_memory(entry: MemoryEntry):
         "timestamp": datetime.utcnow().isoformat(),
         "message": entry.data
     }
+
+    history = []
     if os.path.exists(path):
         with open(path, "r") as f:
             history = json.load(f)
-    else:
-        history = []
     history.append(new_entry)
     with open(path, "w") as f:
         json.dump(history, f, indent=2)
+
+    if "LAW" in entry.data.upper() or "ERROR:" in entry.data.upper():
+        try:
+            resp = requests.post(RENDER_HOOK)
+            print("🔥 Render Deploy Triggered:", resp.status_code)
+            with open("deploy.log", "a") as log_file:
+                log_file.write(f"{datetime.utcnow().isoformat()} | Deploy Triggered | Status: {resp.status_code}\n")
+        except Exception as e:
+            print("⚠️ Webhook failed:", e)
+
     return {"status": "stored", "entry_count": len(history)}
 
 @app.post("/fetchMemory")
@@ -56,3 +66,26 @@ def init_session(payload: dict):
         with open(path, "w") as f:
             json.dump([], f)
     return {"status": "initialized"}
+
+@app.get("/status")
+def get_status():
+    session_id = "default"
+    path = os.path.join(memory_dir, f"{session_id}.json")
+    memory_log_exists = os.path.exists(path)
+    deploy_log_exists = os.path.exists("deploy.log")
+    entry_count = 0
+
+    if memory_log_exists:
+        with open(path) as f:
+            try:
+                entry_count = len(json.load(f))
+            except:
+                entry_count = -1
+
+    return {
+        "deploy_log_exists": deploy_log_exists,
+        "memory_log_exists": memory_log_exists,
+        "session_id": session_id,
+        "entry_count": entry_count,
+        "timestamp": datetime.utcnow().isoformat()
+    }
