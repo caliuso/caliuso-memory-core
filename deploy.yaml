@@ -1,0 +1,45 @@
+name: Deploy to Render
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Pull repo
+        uses: actions/checkout@v3
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Trigger Render Deploy
+        run: |
+          curl -X POST https://api.render.com/deploy/srv-d0v36afdiees73cf3gqg?key=ndrwqm0sqVIname: Deploy to Render
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Pull repo
+        uses: actions/checkout@v3
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Trigger Render Deploy
+        run: |
+          curl -X POST https://api.render.com/deploy/srv-d0v36afdiees73cf3gqg?key=ndrwqm0sqVI
