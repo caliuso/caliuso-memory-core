@@ -1,9 +1,13 @@
 services:
   - type: web
-    name: caliuso-memory-core
-    runtime: python
-    buildCommand: ""
+    name: caliuso-memory-api
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
     startCommand: uvicorn caliuso_memory_api:app --host 0.0.0.0 --port 10000
+    autoDeploy: true
     envVars:
-      - key: PORT
-        value: 10000
+      - key: PYTHON_VERSION
+        value: 3.10
+    healthCheckPath: /ping
